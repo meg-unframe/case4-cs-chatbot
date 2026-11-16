@@ -12,7 +12,7 @@ AIエンジニア講座「案件4：フルスタックCSチャットボット」
 | 有人引き継ぎ | 回答不能・クレーム時に `waiting_operator` へ |
 | オペレーター画面 | 会話一覧・詳細・返信 |
 | Supabase | 会話保存、認証、Realtime、RLSによる権限分離 |
-| 営業時間 | 10:00〜18:00（日本時間）。時間外は AI 対応のみで、翌営業日に対応 |
+| 営業時間 | 10:00〜18:00（日本時間）。時間外は AI 対応のみで、翌営業日に対応（営業日は未確定。現在は仮設定で月〜金・祝日なし） |
 | 公開 | Vercel |
 
 **Phase2（今回は対象外）:** Shopify在庫・配送API連携、分析ダッシュボード、感情分析
@@ -112,7 +112,7 @@ src/
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ブラウザ可 | anon key（RLS前提） |
 | `SUPABASE_SERVICE_ROLE_KEY` | **サーバー専用** | AI応答の保存・FAQ検索 |
 | `ANTHROPIC_API_KEY` | **サーバー専用** | Claude API |
-| `ANTHROPIC_MODEL` | サーバー | 省略時 `claude-opus-5-5` |
+| `ANTHROPIC_MODEL` | サーバー | 省略時 `claude-sonnet-4-6` |
 
 ## 開発コマンド
 
@@ -125,23 +125,33 @@ npm run build      # 本番ビルド
 
 ## 並行開発の担当範囲（Git Worktree ＋ Subagents）
 
-`main` を統合ブランチとし、3領域をそれぞれ別の worktree・ブランチで開発します。
+`main` を統合ブランチとし、3領域をそれぞれ別の worktree・ブランチで開発します。DB と共通型は特定の領域に属さない**共有基盤**として `main` で管理します。
 
 ```bash
-git worktree add ../case4-widget   -b feat/widget-ai
-git worktree add ../case4-operator -b feat/operator-console
-git worktree add ../case4-data     -b feat/data-quality
+git worktree add ../case4-customer-ui -b feat/customer-ui
+git worktree add ../case4-operator-ui -b feat/operator-ui
+git worktree add ../case4-ai-backend  -b feat/ai-backend
 ```
 
 | 領域 | ブランチ | 担当ファイル | 主な作業 |
 |---|---|---|---|
-| A. 顧客ウィジェット＋AI応答 | `feat/widget-ai` | `src/components/widget/**`、`src/app/api/chat/**`、`src/lib/ai/**`、`src/app/widget/**` | 匿名サインイン、会話作成、メッセージ送受信（Realtime）、Claude 応答、引き継ぎ判定、営業時間外の案内、EC埋め込み方法 |
-| B. オペレーター管理画面 | `feat/operator-console` | `src/app/operator/**`、`src/components/operator/**`、`src/app/api/operator/**` | ログイン、会話一覧（状態フィルタ）、詳細、返信、担当割当・状態変更、Realtime 更新 |
-| C. データ・DB・品質 | `feat/data-quality` | `supabase/**`、`data/**`、`scripts/**`、`src/types/**` | FAQ 18件の投入と埋め込み生成、テスト8件の実行手段、RLSテスト、型生成、マイグレーション追加 |
+| 顧客UI | `feat/customer-ui` | `src/components/widget/**`、`src/app/widget/**` | ECサイト埋め込みウィジェット、匿名サインイン、会話作成、メッセージ送受信と Realtime 表示、引き継ぎ要求ボタン、営業時間外の表示 |
+| 管理画面 | `feat/operator-ui` | `src/app/operator/**`、`src/components/operator/**`、`src/app/api/operator/**` | オペレーターログイン、会話一覧（状態フィルタ）、詳細、返信、担当割当・状態変更、Realtime 更新 |
+| AIバックエンド | `feat/ai-backend` | `src/app/api/chat/**`、`src/lib/ai/**`、`scripts/**`、`data/**` | チャットAPI、FAQ検索と Claude 応答、引き継ぎ判定（回答不能・クレーム）、営業時間外の応答文、FAQ 18件の投入と埋め込み生成、テスト 8件の実行 |
+
+**共有基盤**（どの領域の worktree でも直接変更しない）:
+
+| 対象 | ファイル |
+|---|---|
+| DB | `supabase/migrations/**`、`supabase/tests/**` |
+| 共通型 | `src/types/**` |
+| 共通ライブラリ | `src/lib/supabase/**`、`src/lib/env.ts`、`src/lib/business-hours.ts` |
+| 設定 | `package.json`、`package-lock.json`、`.env.example`、`next.config.ts`、`src/middleware.ts` |
 
 ルール:
 
-- **共有ファイル**（`src/types/**`、`src/lib/supabase/**`、`src/lib/env.ts`、`src/lib/business-hours.ts`、`package.json`）は C が変更を担当する。A・B は C に依頼するか、`main` で先に小さく変更して各ブランチへ取り込む。
+- 共有基盤の変更が必要になったら、統合担当（メインセッション）が `main` で小さくコミットする。各 worktree は `git rebase main` でそれを取り込む。
+- 顧客UIと AIバックエンドの間のチャットAPIの入出力は、AIバックエンドが先に型として `src/types/` に追加する（共有基盤なので `main` 経由）。
 - スキーマの変更は既存マイグレーションを書き換えず、`supabase/migrations/` に新しいファイルを追加する。
 - 各ブランチは `npm run typecheck && npm run lint && npm run build` を通してから `main` に統合する。
 - 秘密情報（`.env.local`）は各 worktree に手動でコピーし、コミットしない。
@@ -166,4 +176,5 @@ git worktree add ../case4-data     -b feat/data-quality
 
 ### 暫定の前提（要確認）
 
-- 営業日は月〜金で、祝日は未登録（`src/lib/business-hours.ts` の `BUSINESS_DAYS` / `HOLIDAYS` で調整する）
+- **営業日は未確定。** 現在の「月〜金・祝日なし」は動作確認用の**仮設定**です。確定したら `src/lib/business-hours.ts` の `BUSINESS_DAYS`（曜日）と `HOLIDAYS`（休業日）を更新します。
+- 営業時間 10:00〜18:00（日本時間）は確定です。

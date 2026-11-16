@@ -14,7 +14,7 @@ export function getAnthropicClient(): Anthropic {
   return client;
 }
 
-/** 使用モデル。ANTHROPIC_MODEL で上書き可能（既定: claude-opus-5-5） */
+/** 使用モデル。ANTHROPIC_MODEL で上書き可能（既定: claude-sonnet-4-6） */
 export function getAnthropicModel(): string {
   return getServerEnv().anthropicModel;
 }

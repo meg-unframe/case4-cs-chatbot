@@ -1,5 +1,6 @@
 // 営業時間判定（日本時間 10:00〜18:00）。
-// 営業日は暫定で「月〜金」。土日・祝日の扱いは教材の指定に合わせて BUSINESS_DAYS / HOLIDAYS を調整する。
+// 営業時間 10:00〜18:00 は確定。
+// 営業日は未確定のため、BUSINESS_DAYS（月〜金）と HOLIDAYS（空）は仮設定。確定後に更新する。
 
 export const BUSINESS_TIMEZONE = "Asia/Tokyo";
 export const OPEN_HOUR = 10;
