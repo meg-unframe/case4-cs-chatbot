@@ -1,3 +1,4 @@
+import { isOperator } from "@/lib/auth/roles";
 import type { User } from "@supabase/supabase-js";
 import { describe, expect, it } from "vitest";
 import type { Conversation, Message } from "@/types/database";
@@ -8,7 +9,6 @@ import {
   countChars,
   describeDbError,
   formatDateTime,
-  isOperatorUser,
   limitList,
   makeExcerpt,
   mergeMessages,
@@ -159,15 +159,15 @@ describe("返信", () => {
   });
 });
 
-describe("isOperatorUser", () => {
+describe("isOperator（src/lib/auth/roles）", () => {
   const user = (over: Partial<User>): User =>
     ({ id: "u", app_metadata: {}, user_metadata: {}, aud: "authenticated", created_at: "", ...over }) as User;
 
   it("app_metadata.role = operator のみ", () => {
-    expect(isOperatorUser(user({ app_metadata: { role: "operator" } }))).toBe(true);
-    expect(isOperatorUser(user({ user_metadata: { role: "operator" } }))).toBe(false);
-    expect(isOperatorUser(user({ app_metadata: { role: "operator" }, is_anonymous: true }))).toBe(false);
-    expect(isOperatorUser(null)).toBe(false);
+    expect(isOperator(user({ app_metadata: { role: "operator" } }))).toBe(true);
+    expect(isOperator(user({ user_metadata: { role: "operator" } }))).toBe(false);
+    expect(isOperator(user({ app_metadata: { role: "operator" }, is_anonymous: true }))).toBe(false);
+    expect(isOperator(null)).toBe(false);
   });
 });
 

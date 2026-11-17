@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { isOperatorUser } from "./conversation-utils";
+import { isOperator } from "@/lib/auth/roles";
 import styles from "./LoginForm.module.css";
 
 /** オペレーターのログイン（メール＋パスワード） */
@@ -35,7 +35,7 @@ export function LoginForm() {
         setSubmitting(false);
         return;
       }
-      if (!isOperatorUser(data.user)) {
+      if (!isOperator(data.user)) {
         // オペレーター以外はセッションを残さない
         await supabase.auth.signOut();
         setPassword("");

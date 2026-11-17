@@ -1,6 +1,5 @@
 // 管理画面の純粋関数（ブラウザ・サーバー・テストのどこからでも使える。外部APIは呼ばない）
 
-import type { User } from "@supabase/supabase-js";
 import type { Conversation, Message } from "@/types/database";
 import { MESSAGE_MAX_LENGTH, type ConversationStatus, type SenderType } from "@/types/domain";
 
@@ -33,17 +32,6 @@ export const SENDER_LABELS: Record<SenderType, string> = {
 };
 
 // ---- 権限 ---------------------------------------------------------------
-
-/**
- * オペレーター判定（ブラウザ用）。
- * src/lib/supabase/server.ts の isOperator と同じ条件（app_metadata.role、匿名は不可）。
- * server.ts は "server-only" のためクライアントから import できず、ここで同じ判定を持つ。
- * 最終的な権限判定はサーバー側のガードと RLS が行う。
- */
-export function isOperatorUser(user: User | null | undefined): boolean {
-  if (!user || user.is_anonymous) return false;
-  return user.app_metadata?.role === "operator";
-}
 
 // ---- 表示 ---------------------------------------------------------------
 

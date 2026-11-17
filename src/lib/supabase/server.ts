@@ -3,6 +3,7 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { isOperator } from "@/lib/auth/roles";
 import { getPublicEnv } from "@/lib/env";
 import type { Database } from "@/types/database";
 
@@ -29,15 +30,7 @@ export async function createSupabaseServerClient(): Promise<SupabaseClient<Datab
   });
 }
 
-/**
- * オペレーター判定。管理者のみが設定できる app_metadata.role を使う。
- * user_metadata は顧客自身が変更できるため権限判定に使わない。
- * DB側の public.is_operator() と同じ条件。
- */
-export function isOperator(user: User | null | undefined): boolean {
-  if (!user || user.is_anonymous) return false;
-  return user.app_metadata?.role === "operator";
-}
+export { isOperator };
 
 /** 認証済みオペレーターを返す。該当しなければ null。 */
 export async function getOperatorUser(): Promise<User | null> {
