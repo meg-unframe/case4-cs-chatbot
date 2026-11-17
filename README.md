@@ -90,9 +90,9 @@ src/
 1. **Supabase プロジェクトを作成する**（案件4専用。他案件のプロジェクトは流用しない）。✅ 作成済み（Data API オン／新規テーブルの自動公開オフ／自動RLS オン）
    - 自動公開がオフなので、テーブルと関数の権限はマイグレーション内の `GRANT` で明示的に付与している。`anon` には付与しない。
 2. **Authentication → Sign In / Providers** で **Anonymous sign-ins** を有効にする。✅ 有効化済み。不正利用対策として CAPTCHA（Turnstile 等）も検討する。
-3. **マイグレーションを適用する。** SQL Editor に `supabase/migrations/20261116000000_init.sql` を貼り付けて実行する。CLI を使う場合は `npx supabase link` → `npx supabase db push`。
-4. **RLSを確認する。** SQL Editor で `supabase/tests/rls_smoke.sql` を実行し、`all checks passed` が出ることを確認する。
-5. **Realtime を確認する。** Database → Publications の `supabase_realtime` に `conversations` と `messages` が含まれていることを確認する。
+3. **マイグレーションを適用する。** SQL Editor に `supabase/migrations/20261116000000_init.sql` を貼り付けて実行する。CLI を使う場合は `npx supabase link` → `npx supabase db push`。✅ 2026-11-17 適用済み（SQL Editor）
+4. **RLSを確認する。** SQL Editor で `supabase/tests/rls_smoke.sql` を実行し、`all checks passed` が出ることを確認する。✅ 2026-11-17 合格
+5. **Realtime を確認する。** Database → Publications の `supabase_realtime` に `conversations` と `messages` が含まれていることを確認する。✅ RLSテスト内で確認済み
 6. **オペレーターを作成する。** Authentication → Users でメール＋パスワードのユーザーを作り、SQL Editor で権限を付与する。
    ```sql
    update auth.users
@@ -100,7 +100,7 @@ src/
     where email = '<オペレーターのメール>';
    ```
    付与後、オペレーターは再ログインしてJWTを更新する。
-7. **環境変数を設定する。** `cp .env.example .env.local` を実行し、エディタで値を入力する（チャットやターミナルに貼らない）。
+7. **環境変数を設定する。** `cp .env.example .env.local` を実行し、エディタで値を入力する（チャットやターミナルに貼らない）。✅ Supabase分は設定済み・接続確認済み／`ANTHROPIC_API_KEY` は未設定
    - Supabase の値は Project Settings → Data API（URL）と API Keys にある。新形式のキー（`sb_publishable_...` / `sb_secret_...`）も従来形式（anon / service_role）も、同じ変数名に入れてよい。
 8. **起動する。** `npm install` → `npm run dev` で http://localhost:3000 を開く。
 9. **FAQを投入する。** 教材の FAQ 18件を `data/` に配置し、投入スクリプト（未作成）で `faqs` に登録して埋め込みを生成する。
@@ -160,16 +160,17 @@ git worktree add ../case4-ai-backend  -b feat/ai-backend
 
 ## 現在の状態
 
-### 実施済み（ローカル）
+### 実施済み
 
 - Next.js 雛形、依存関係（Supabase・Anthropic SDK）
 - マイグレーション SQL、RLS テスト SQL、共通型、接続処理、営業時間ロジック
 - `typecheck` / `lint` / `build` が成功
+- Supabase（案件4専用プロジェクト）への接続確認、マイグレーション適用（2026-11-17）
+- 未ログインのユーザーが拒否されることを API 経由で確認
+- 実環境での RLS テスト `rls_smoke.sql` に合格（2026-11-17）
 
 ### 未実施
 
-- クラウドDBへのマイグレーション適用
-- RLS の実環境テスト（ローカルの Postgres 17 では Supabase の auth を模擬して `rls_smoke.sql` が成功。pgvector は配列型で代用）
 - Claude API の接続確認（API呼び出しは未実施）
 - FAQ 18件・テスト 8件の投入（データ未受領。内容は創作しない）
 - 埋め込みプロバイダーの選定（Claude API は埋め込みを提供しない。1536次元に合うモデルを選ぶ）
