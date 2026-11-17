@@ -15,5 +15,5 @@
 - ✅ 2026-11-17: 案件4の Supabase の `public.faqs` に18件を投入した。`faq_no` が一意なので、同じ番号の行は入らない（再実行しても重複しないことを確認済み）。
 - 番号・カテゴリ・質問・回答が CSV と完全に一致することを照合済み（不一致0件、CSVにない行0件）。
 - `faqs` には、`faq_no`・`category`・`question`・`answer` に CSV の値をそのまま入れる。
-- `embedding`（1536次元）は**未設定**（18件すべて NULL）。OpenAI `text-embedding-3-small`（1536次元）で生成する（2026-11-17 決定）。
+- `embedding`: ✅ 2026-11-17 に OpenAI `text-embedding-3-small` で18件分を生成・保存した（1536次元、合計1,564トークン）。埋め込みに使うテキストは「カテゴリ・質問・回答」を連結したもの（`scripts/embed-faqs.mjs`）。
 - 投入は service_role で行う（authenticated には insert 権限がない）。

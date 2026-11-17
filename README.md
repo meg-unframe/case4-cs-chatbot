@@ -103,7 +103,7 @@ src/
 7. **環境変数を設定する。** `cp .env.example .env.local` を実行し、エディタで値を入力する（チャットやターミナルに貼らない）。✅ 設定済み・接続確認済み（Supabase／Claude API／OpenAI Embeddings）
    - Supabase の値は Project Settings → Data API（URL）と API Keys にある。新形式のキー（`sb_publishable_...` / `sb_secret_...`）も従来形式（anon / service_role）も、同じ変数名に入れてよい。
 8. **起動する。** `npm install` → `npm run dev` で http://localhost:3000 を開く。
-9. **FAQを投入する。** 教材の FAQ 18件を `data/` に配置し、投入スクリプト（未作成）で `faqs` に登録して埋め込みを生成する。
+9. **FAQを投入する。** 教材の FAQ 18件を `data/` に配置し、`faqs` に登録してから `npm run embed:faqs -- --yes` で埋め込みを生成する。✅ 2026-11-17 投入・埋め込み生成済み
 10. **Vercelへデプロイする。** リポジトリを連携し、7 と同じ環境変数を Production / Preview に設定する。
 
 ### 環境変数
@@ -124,6 +124,9 @@ npm run dev        # 開発サーバー
 npm run typecheck  # 型チェック
 npm run lint       # ESLint
 npm run build      # 本番ビルド
+npm run embed:faqs                 # embedding 未設定の FAQ 件数を確認（書き込まない）
+npm run embed:faqs -- --yes        # 未設定の FAQ の埋め込みを生成・保存（--all で全件作り直し）
+npm run search:faqs -- "質問文"     # 埋め込み検索の上位3件を表示（DB は変更しない）
 ```
 
 ## 並行開発の担当範囲（Git Worktree ＋ Subagents）
@@ -171,11 +174,11 @@ git worktree add ../case4-ai-backend  -b feat/ai-backend
 - 実環境での RLS テスト `rls_smoke.sql` に合格（2026-11-17）
 - Claude API の接続確認（`claude-sonnet-4-6` で短い呼び出しが成功、2026-11-17）
 - OpenAI Embeddings の接続確認（`text-embedding-3-small` で1回呼び出し、1536次元を確認、2026-11-17）
+- FAQ 18件の埋め込みの生成と保存（`npm run embed:faqs -- --yes`、1536次元×18件、2026-11-17）。テスト No.2・3・8 の質問で、期待どおりの FAQ が検索の上位に入ることを確認
 - `faq_no` 列を追加するマイグレーションの適用と、FAQ 18件の投入（CSV と完全一致を照合済み、2026-11-17）。テスト 8件は `data/` に配置済み
 
 ### 未実施
 
-- FAQ の埋め込み（`embedding`）の生成（18件すべて未設定）
 - ウィジェット、チャットAPI、オペレーター画面の実装
 - Vercel へのデプロイ
 

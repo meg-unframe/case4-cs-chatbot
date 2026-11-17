@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "embed:faqs": "node --env-file=.env.local scripts/embed-faqs.mjs",
+    "search:faqs": "node --env-file=.env.local scripts/search-faqs.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",
