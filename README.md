@@ -100,7 +100,7 @@ src/
     where email = '<オペレーターのメール>';
    ```
    付与後、オペレーターは再ログインしてJWTを更新する。
-7. **環境変数を設定する。** `cp .env.example .env.local` を実行し、エディタで値を入力する（チャットやターミナルに貼らない）。✅ 設定済み・接続確認済み（Supabase／Claude API）／`OPENAI_API_KEY` は入力欄のみ用意（未設定）
+7. **環境変数を設定する。** `cp .env.example .env.local` を実行し、エディタで値を入力する（チャットやターミナルに貼らない）。✅ 設定済み・接続確認済み（Supabase／Claude API／OpenAI Embeddings）
    - Supabase の値は Project Settings → Data API（URL）と API Keys にある。新形式のキー（`sb_publishable_...` / `sb_secret_...`）も従来形式（anon / service_role）も、同じ変数名に入れてよい。
 8. **起動する。** `npm install` → `npm run dev` で http://localhost:3000 を開く。
 9. **FAQを投入する。** 教材の FAQ 18件を `data/` に配置し、投入スクリプト（未作成）で `faqs` に登録して埋め込みを生成する。
@@ -170,11 +170,11 @@ git worktree add ../case4-ai-backend  -b feat/ai-backend
 - 未ログインのユーザーが拒否されることを API 経由で確認
 - 実環境での RLS テスト `rls_smoke.sql` に合格（2026-11-17）
 - Claude API の接続確認（`claude-sonnet-4-6` で短い呼び出しが成功、2026-11-17）
+- OpenAI Embeddings の接続確認（`text-embedding-3-small` で1回呼び出し、1536次元を確認、2026-11-17）
 - `faq_no` 列を追加するマイグレーションの適用と、FAQ 18件の投入（CSV と完全一致を照合済み、2026-11-17）。テスト 8件は `data/` に配置済み
 
 ### 未実施
 
-- OpenAI API キーの設定と接続確認
 - FAQ の埋め込み（`embedding`）の生成（18件すべて未設定）
 - ウィジェット、チャットAPI、オペレーター画面の実装
 - Vercel へのデプロイ
