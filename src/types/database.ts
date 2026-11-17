@@ -33,6 +33,8 @@ type MessageRow = {
 
 type FaqRow = {
   id: string;
+  /** 教材CSVの「番号」。一意・正の整数 */
+  faq_no: number;
   category: string;
   question: string;
   answer: string;
@@ -87,6 +89,7 @@ export type Database = {
         Row: FaqRow;
         Insert: {
           id?: string;
+          faq_no: number;
           category: string;
           question: string;
           answer: string;
@@ -94,6 +97,7 @@ export type Database = {
           created_at?: string;
         };
         Update: {
+          faq_no?: number;
           category?: string;
           question?: string;
           answer?: string;
@@ -113,6 +117,7 @@ export type Database = {
         Args: { query_embedding: string; match_count?: number; min_similarity?: number };
         Returns: {
           id: string;
+          faq_no: number;
           category: string;
           question: string;
           answer: string;
