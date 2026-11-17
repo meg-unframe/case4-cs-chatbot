@@ -36,6 +36,10 @@ $$;
 comment on function public.is_operator() is
   'JWTのapp_metadata.role = operator かつ非匿名ユーザーなら true。user_metadataは参照しない。';
 
+-- RLSポリシー内で呼ぶため authenticated に実行権限が必要
+revoke all on function public.is_operator() from public, anon;
+grant execute on function public.is_operator() to authenticated, service_role;
+
 -- ---------------------------------------------------------------------
 -- conversations
 -- ---------------------------------------------------------------------
@@ -135,6 +139,9 @@ create trigger conversations_guard_update
   before update on public.conversations
   for each row execute function public.guard_conversation_update();
 
+-- トリガー関数は直接呼び出させない
+revoke all on function public.guard_conversation_update() from public, anon, authenticated;
+
 -- ---------------------------------------------------------------------
 -- RLS
 -- ---------------------------------------------------------------------
@@ -142,15 +149,27 @@ alter table public.conversations enable row level security;
 alter table public.messages      enable row level security;
 alter table public.faqs          enable row level security;
 
--- 未ログイン(anon)には一切許可しない。匿名認証済みユーザーは authenticated ロール。
-revoke all on public.conversations from anon;
-revoke all on public.messages      from anon;
-revoke all on public.faqs          from anon;
+-- ---------------------------------------------------------------------
+-- GRANT（テーブル権限）
+--   プロジェクト設定「新規テーブルの自動公開: オフ」を前提に、既定権限に頼らず明示する。
+--   自動公開オンの環境でも同じ結果になるよう、まず全剥奪してから必要分だけ付与する。
+--   GRANT は「操作の種類」、RLS は「どの行か」を制御する。両方を満たした操作だけが通る。
+-- ---------------------------------------------------------------------
+revoke all on public.conversations, public.messages, public.faqs from public, anon, authenticated;
 
--- 顧客は行の削除・メッセージの編集をしない。オペレーターも履歴を改変しない。
-revoke delete on public.conversations from authenticated;
-revoke update, delete on public.messages from authenticated;
-revoke insert, update, delete on public.faqs from authenticated;
+-- 未ログイン(anon)には一切付与しない。匿名認証済みの顧客は authenticated ロールになる。
+
+-- authenticated（顧客・オペレーター共通。行の範囲は RLS で絞る）
+grant select, insert on public.conversations to authenticated;
+-- 更新できる列を限定（RLS上はオペレーターのみ更新可）
+grant update (status, assigned_operator_id, category) on public.conversations to authenticated;
+-- メッセージは追記のみ。更新・削除は付与しない
+grant select, insert on public.messages to authenticated;
+-- FAQ は参照のみ（RLS上はオペレーターのみ）
+grant select on public.faqs to authenticated;
+
+-- service_role（サーバー専用。RLSはバイパスするがテーブル権限は必要）
+grant select, insert, update, delete on public.conversations, public.messages, public.faqs to service_role;
 
 -- ---- conversations ----
 -- 顧客: 自分の会話のみ参照（auth.uid() と照合。ブラウザが送るIDは信用しない）
@@ -268,7 +287,7 @@ end;
 $$;
 
 revoke all on function public.request_operator_handoff(uuid) from public, anon;
-grant execute on function public.request_operator_handoff(uuid) to authenticated;
+grant execute on function public.request_operator_handoff(uuid) to authenticated, service_role;
 
 -- ---------------------------------------------------------------------
 -- RPC: FAQ類似検索（サーバー専用）

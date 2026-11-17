@@ -87,8 +87,9 @@ src/
 
 > 秘密値は `.env.local` と Vercel の環境変数にだけ置きます。コミット・共有・画面表示はしません。
 
-1. **Supabase プロジェクトを作成する**（案件4専用。他案件のプロジェクトは流用しない）。
-2. **Authentication → Sign In / Providers** で **Anonymous sign-ins** を有効にする。不正利用対策として CAPTCHA（Turnstile 等）も検討する。
+1. **Supabase プロジェクトを作成する**（案件4専用。他案件のプロジェクトは流用しない）。✅ 作成済み（Data API オン／新規テーブルの自動公開オフ／自動RLS オン）
+   - 自動公開がオフなので、テーブルと関数の権限はマイグレーション内の `GRANT` で明示的に付与している。`anon` には付与しない。
+2. **Authentication → Sign In / Providers** で **Anonymous sign-ins** を有効にする。✅ 有効化済み。不正利用対策として CAPTCHA（Turnstile 等）も検討する。
 3. **マイグレーションを適用する。** SQL Editor に `supabase/migrations/20261116000000_init.sql` を貼り付けて実行する。CLI を使う場合は `npx supabase link` → `npx supabase db push`。
 4. **RLSを確認する。** SQL Editor で `supabase/tests/rls_smoke.sql` を実行し、`all checks passed` が出ることを確認する。
 5. **Realtime を確認する。** Database → Publications の `supabase_realtime` に `conversations` と `messages` が含まれていることを確認する。
@@ -99,7 +100,8 @@ src/
     where email = '<オペレーターのメール>';
    ```
    付与後、オペレーターは再ログインしてJWTを更新する。
-7. **環境変数を設定する。** `cp .env.example .env.local` を実行し、Supabase の Project Settings → API と Anthropic Console の値を入力する。
+7. **環境変数を設定する。** `cp .env.example .env.local` を実行し、エディタで値を入力する（チャットやターミナルに貼らない）。
+   - Supabase の値は Project Settings → Data API（URL）と API Keys にある。新形式のキー（`sb_publishable_...` / `sb_secret_...`）も従来形式（anon / service_role）も、同じ変数名に入れてよい。
 8. **起動する。** `npm install` → `npm run dev` で http://localhost:3000 を開く。
 9. **FAQを投入する。** 教材の FAQ 18件を `data/` に配置し、投入スクリプト（未作成）で `faqs` に登録して埋め込みを生成する。
 10. **Vercelへデプロイする。** リポジトリを連携し、7 と同じ環境変数を Production / Preview に設定する。
@@ -109,8 +111,8 @@ src/
 | 変数 | 公開範囲 | 用途 |
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | ブラウザ可 | Supabase URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ブラウザ可 | anon key（RLS前提） |
-| `SUPABASE_SERVICE_ROLE_KEY` | **サーバー専用** | AI応答の保存・FAQ検索 |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ブラウザ可 | publishable key または anon key（RLS前提） |
+| `SUPABASE_SERVICE_ROLE_KEY` | **サーバー専用** | secret key または service_role key（AI応答の保存・FAQ検索） |
 | `ANTHROPIC_API_KEY` | **サーバー専用** | Claude API |
 | `ANTHROPIC_MODEL` | サーバー | 省略時 `claude-sonnet-4-6` |
 
@@ -166,8 +168,8 @@ git worktree add ../case4-ai-backend  -b feat/ai-backend
 
 ### 未実施
 
-- Supabase プロジェクトの作成とクラウドDBへの適用
-- RLS の実環境テスト（`rls_smoke.sql` は未実行）
+- クラウドDBへのマイグレーション適用
+- RLS の実環境テスト（ローカルの Postgres 17 では Supabase の auth を模擬して `rls_smoke.sql` が成功。pgvector は配列型で代用）
 - Claude API の接続確認（API呼び出しは未実施）
 - FAQ 18件・テスト 8件の投入（データ未受領。内容は創作しない）
 - 埋め込みプロバイダーの選定（Claude API は埋め込みを提供しない。1536次元に合うモデルを選ぶ）
