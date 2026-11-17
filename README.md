@@ -124,6 +124,8 @@ npm run dev        # 開発サーバー
 npm run typecheck  # 型チェック
 npm run lint       # ESLint
 npm run build      # 本番ビルド
+npm test           # 単体テスト（外部APIを呼ばない）
+npm run eval       # 教材のテスト会話8件の評価（Claude・OpenAI・Supabase を実際に呼ぶ）
 npm run embed:faqs                 # embedding 未設定の FAQ 件数を確認（書き込まない）
 npm run embed:faqs -- --yes        # 未設定の FAQ の埋め込みを生成・保存（--all で全件作り直し）
 npm run search:faqs -- "質問文"     # 埋め込み検索の上位3件を表示（DB は変更しない）
@@ -141,18 +143,18 @@ git worktree add ../case4-ai-backend  -b feat/ai-backend
 
 | 領域 | ブランチ | 担当ファイル | 主な作業 |
 |---|---|---|---|
-| 顧客UI | `feat/customer-ui` | `src/components/widget/**`、`src/app/widget/**` | ECサイト埋め込みウィジェット、匿名サインイン、会話作成、メッセージ送受信と Realtime 表示、引き継ぎ要求ボタン、営業時間外の表示 |
+| 顧客UI | `feat/customer-ui` | `src/components/widget/**`、`src/app/widget/**`、`public/widget-embed.js`、`src/app/page.tsx`（埋め込みデモ） | ECサイト埋め込みウィジェット、匿名サインイン、会話作成、メッセージ送受信と Realtime 表示、引き継ぎ要求ボタン、営業時間外の表示 |
 | 管理画面 | `feat/operator-ui` | `src/app/operator/**`、`src/components/operator/**`、`src/app/api/operator/**` | オペレーターログイン、会話一覧（状態フィルタ）、詳細、返信、担当割当・状態変更、Realtime 更新 |
-| AIバックエンド | `feat/ai-backend` | `src/app/api/chat/**`、`src/lib/ai/**`、`scripts/**`、`data/**` | チャットAPI、FAQ検索と Claude 応答、引き継ぎ判定（回答不能・クレーム）、営業時間外の応答文、FAQ 18件の投入と埋め込み生成、テスト 8件の実行 |
+| AIバックエンド | `feat/ai-backend` | `src/app/api/chat/**`、`src/app/api/business-hours/**`、`src/lib/ai/**`、`eval/**`、`scripts/**`、`data/**` | チャットAPI、FAQ検索と Claude 応答、引き継ぎ判定（回答不能・クレーム）、営業時間外の応答文、FAQ 18件の投入と埋め込み生成、テスト 8件の実行 |
 
 **共有基盤**（どの領域の worktree でも直接変更しない）:
 
 | 対象 | ファイル |
 |---|---|
 | DB | `supabase/migrations/**`、`supabase/tests/**` |
-| 共通型 | `src/types/**` |
+| 共通型・API仕様 | `src/types/**`（チャットAPIの仕様は `src/types/chat-api.ts`） |
 | 共通ライブラリ | `src/lib/supabase/**`、`src/lib/env.ts`、`src/lib/business-hours.ts` |
-| 設定 | `package.json`、`package-lock.json`、`.env.example`、`next.config.ts`、`src/middleware.ts` |
+| 設定 | `package.json`、`package-lock.json`、`.env.example`、`next.config.ts`、`src/middleware.ts`、`vitest.config.mts`、`test/**` |
 
 ルール:
 

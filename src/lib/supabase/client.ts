@@ -6,7 +6,7 @@ import type { Database } from "@/types/database";
 
 let browserClient: SupabaseClient<Database> | undefined;
 
-/** ブラウザ用クライアント（anon key + ユーザーのセッション。RLSが適用される） */
+/** ブラウザ用クライアント（Cookie セッション。オペレーター画面用。RLSが適用される） */
 export function getSupabaseBrowserClient(): SupabaseClient<Database> {
   if (!browserClient) {
     // NEXT_PUBLIC_* はビルド時に文字列置換されるため、直接参照する
@@ -20,18 +20,4 @@ export function getSupabaseBrowserClient(): SupabaseClient<Database> {
   return browserClient;
 }
 
-/**
- * 顧客ウィジェット用：セッションがなければ匿名サインインする。
- * 会話の所有者は auth.uid() で判定されるため、独自IDをブラウザで発行しない。
- */
-export async function ensureAnonymousSession(): Promise<string> {
-  const supabase = getSupabaseBrowserClient();
-  const { data } = await supabase.auth.getUser();
-  if (data.user) return data.user.id;
-
-  const { data: signIn, error } = await supabase.auth.signInAnonymously();
-  if (error || !signIn.user) {
-    throw new Error(`匿名サインインに失敗しました: ${error?.message ?? "unknown"}`);
-  }
-  return signIn.user.id;
-}
+// 顧客ウィジェットは ./widget-client.ts（localStorage セッション）を使う。
