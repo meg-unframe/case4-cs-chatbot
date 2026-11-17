@@ -1,0 +1,34 @@
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.waiting_operator {
+  background: #fdecea;
+  color: #a12a1f;
+  border-color: #f3b8b1;
+}
+
+.operator_handling {
+  background: #e6f0fb;
+  color: #1d4f8c;
+  border-color: #b7d0ee;
+}
+
+.ai_handling {
+  background: #eef6ee;
+  color: #2f6b34;
+  border-color: #c3dfc5;
+}
+
+.closed {
+  background: #f0f0f0;
+  color: #5a5a5a;
+  border-color: #d6d6d6;
+}

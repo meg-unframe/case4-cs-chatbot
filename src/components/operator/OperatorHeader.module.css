@@ -1,0 +1,109 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 20px;
+  height: 56px;
+  background: #1f3d2b;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.brandSub {
+  margin-left: 6px;
+  font-weight: 400;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.hours {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  flex: 1;
+  min-width: 0;
+}
+
+.hoursLabel {
+  opacity: 0.9;
+  white-space: nowrap;
+}
+
+.hoursState {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.open {
+  background: #d8f0dc;
+  color: #1d5a27;
+}
+
+.closed {
+  background: #f6e2c4;
+  color: #7a4a0c;
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  min-width: 0;
+}
+
+.email {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signOut {
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 6px;
+  background: transparent;
+  color: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.signOut:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.signOut:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.error {
+  color: #ffd3cc;
+}
+
+@media (max-width: 760px) {
+  .header {
+    height: auto;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 10px 16px;
+  }
+
+  .hours {
+    order: 3;
+    flex-basis: 100%;
+  }
+}
