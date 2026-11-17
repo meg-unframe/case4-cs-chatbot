@@ -6,6 +6,21 @@
 -- =====================================================================
 begin;
 
+-- 構成の反映確認（RLS有効化・ポリシー数・Realtime）
+do $$ declare n int; begin
+  select count(*) into n from pg_class c join pg_namespace ns on ns.oid = c.relnamespace
+   where ns.nspname = 'public' and c.relname in ('conversations','messages','faqs') and c.relrowsecurity;
+  if n <> 3 then raise exception 'NG: RLSが有効なテーブルが3つではない (%)', n; end if;
+
+  select count(*) into n from pg_policies
+   where schemaname = 'public' and tablename in ('conversations','messages','faqs');
+  if n <> 9 then raise exception 'NG: ポリシー数が9ではない (%)', n; end if;
+
+  select count(*) into n from pg_publication_tables
+   where pubname = 'supabase_realtime' and schemaname = 'public' and tablename in ('conversations','messages');
+  if n <> 2 then raise exception 'NG: Realtime配信対象が2テーブルではない (%)', n; end if;
+end $$;
+
 -- テスト用ユーザー（auth.users へ直接作成。ロールバックで消える）
 insert into auth.users (id, aud, role, email, raw_app_meta_data, is_anonymous)
 values
