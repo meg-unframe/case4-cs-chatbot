@@ -20,6 +20,12 @@
 
 import type { Conversation, Message } from "./database";
 
+/**
+ * Realtime の購読開始（SUBSCRIBED）後、サーバー側で postgres_changes の配信が始まるまでに
+ * 時間差がある（実環境のE2Eで確認）。購読直後の取りこぼしを埋めるため、この時間の後に一度取り直す。
+ */
+export const REALTIME_REFILL_DELAY_MS = 2500;
+
 // ---- エンドポイント ---------------------------------------------------
 
 export const CHAT_API = {

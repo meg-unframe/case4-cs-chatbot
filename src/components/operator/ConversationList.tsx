@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { REALTIME_REFILL_DELAY_MS } from "@/types/chat-api";
 import type { Conversation, Message } from "@/types/database";
 import {
   LIST_LIMIT,
@@ -102,6 +103,7 @@ export function ConversationList() {
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
     let subscribedOnce = false;
+    let refillTimer: number | undefined;
 
     const onConversation = (row: Conversation) => {
       setItems((prev) => limitList(applyConversationChange(prev, row, filterRef.current)));
@@ -143,12 +145,16 @@ export function ConversationList() {
           // 再接続時は切断中の変化を取りこぼさないよう取り直す
           if (subscribedOnce) void reload();
           subscribedOnce = true;
+          // SUBSCRIBED 後、サーバー側で配信が始まるまでの時間差を埋めるため、少し後にも取り直す
+          if (refillTimer !== undefined) window.clearTimeout(refillTimer);
+          refillTimer = window.setTimeout(() => void reload(), REALTIME_REFILL_DELAY_MS);
         } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
           setRealtime("error");
         }
       });
 
     return () => {
+      if (refillTimer !== undefined) window.clearTimeout(refillTimer);
       void supabase.removeChannel(channel);
       if (countTimer.current !== null) window.clearTimeout(countTimer.current);
     };

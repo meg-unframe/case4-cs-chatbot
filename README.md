@@ -83,7 +83,7 @@ src/
 - 顧客が `sender_type`・`status`・担当者を偽装できないようにしています。顧客には UPDATE 権限を与えません。メッセージの投稿は、自分名義の `customer` に限定しています。
 - AI判定による引き継ぎ（回答不能・クレーム）は、サーバーが service_role で状態を更新する前提です。その前に、リクエストユーザーが会話の所有者であることを必ずサーバー側で確認します。
 
-## 接続設定手順（未実施）
+## 接続設定手順
 
 > 秘密値は `.env.local` と Vercel の環境変数にだけ置きます。コミット・共有・画面表示はしません。
 
@@ -179,10 +179,32 @@ git worktree add ../case4-ai-backend  -b feat/ai-backend
 - FAQ 18件の埋め込みの生成と保存（`npm run embed:faqs -- --yes`、1536次元×18件、2026-11-17）。テスト No.2・3・8 の質問で、期待どおりの FAQ が検索の上位に入ることを確認
 - `faq_no` 列を追加するマイグレーションの適用と、FAQ 18件の投入（CSV と完全一致を照合済み、2026-11-17）。テスト 8件は `data/` に配置済み
 
+- 3領域の実装（Worktree＋Subagents で並行開発し main に統合、2026-11-17）
+  - 顧客UI: `/widget`（iframe用チャット）、`public/widget-embed.js`（ECサイト埋め込み）、`/`（埋め込みデモ）
+  - AIバックエンド: `POST /api/chat`、`POST /api/chat/handoff`、`GET /api/business-hours`、FAQ上位3件＋Claude 応答、有人切替判定、営業時間外の案内
+  - 管理画面: `/operator/login`、`/operator`（会話一覧）、`/operator/conversations/[id]`（詳細・返信・担当・完了）
+- 教材のテスト会話 8件の評価 `npm run eval` が **8/8 合格**（結果は `eval/results/latest.md`。No.7 は火曜22時として評価）
+- 実環境の結合テスト（ローカルの本番ビルド＋案件4の Supabase）が **31/31 合格**。認証・顧客間の権限分離（RLS／API 404）・送信者や状態の偽装防止・有人切替（クレーム／顧客リクエスト）・待機中は AI が応答しない・オペレーターの担当／返信／完了・Realtime 配信（本人には届き、他の顧客には届かない）・入力検証。作成した匿名ユーザー・一時オペレーター・会話は削除済み
+
+## ECサイトへの埋め込み
+
+```html
+<script src="https://<デプロイ先のホスト>/widget-embed.js" defer></script>
+```
+
+右下にチャットボタンが表示され、クリックで `/widget` を iframe で開く。本番では `next.config.ts` の `/widget` の `frame-ancestors *` を ECサイトのドメインに限定する。
+
+## 検証で分かったこと
+
+- **Realtime の時間差:** 購読開始（`SUBSCRIBED`）の通知後、サーバー側で配信が始まるまでに少し時間差がある。購読直後の変更を取りこぼさないよう、顧客UI・管理画面とも購読開始の直後と `REALTIME_REFILL_DELAY_MS`（2.5秒）後にデータを取り直す。
+- **類似度:** FAQ 検索の上位の類似度は 0.20〜0.77。下限は設けず、根拠の有無の判断は Claude に任せている。
+
 ### 未実施
 
-- ウィジェット、チャットAPI、オペレーター画面の実装
-- Vercel へのデプロイ
+- Vercel へのデプロイ（環境変数の設定、`frame-ancestors` の本番ドメインへの限定）
+- 実ブラウザでの画面操作の確認（日本語IMEでの Enter、スマホ表示、埋め込みの開閉）。API・DB・Realtime はスクリプトで確認済み
+- 本番用オペレーターアカウントの作成（接続設定手順 6）
+- 営業時間外の判定を実際の時刻で通すE2E（評価では時刻を指定して確認済み）
 
 ### 暫定の前提（要確認）
 

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { REALTIME_REFILL_DELAY_MS } from "@/types/chat-api";
 import type { Conversation, Message } from "@/types/database";
 import { MESSAGE_MAX_LENGTH } from "@/types/domain";
 import {
@@ -77,6 +78,7 @@ export function ConversationDetail({ conversationId }: { conversationId: string 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
     let subscribedOnce = false;
+    let refillTimer: number | undefined;
     const channel = supabase
       .channel(`operator-conversation-${conversationId}`)
       .on<Message>(
@@ -94,9 +96,13 @@ export function ConversationDetail({ conversationId }: { conversationId: string 
           // 再接続時は切断中の変化を取り直す（id で重複排除）
           if (subscribedOnce) void load();
           subscribedOnce = true;
+          // SUBSCRIBED 後、サーバー側で配信が始まるまでの時間差を埋めるため、少し後にも取り直す
+          if (refillTimer !== undefined) window.clearTimeout(refillTimer);
+          refillTimer = window.setTimeout(() => void load(), REALTIME_REFILL_DELAY_MS);
         }
       });
     return () => {
+      if (refillTimer !== undefined) window.clearTimeout(refillTimer);
       void supabase.removeChannel(channel);
     };
   }, [conversationId, load]);

@@ -7,6 +7,7 @@ import { ensureWidgetSession, getWidgetSupabaseClient } from "@/lib/supabase/wid
 import {
   CHAT_API,
   CUSTOMER_MESSAGE_MAX_LENGTH,
+  REALTIME_REFILL_DELAY_MS,
   type BusinessHoursInfo,
   type ChatHandoffRequest,
   type ChatHandoffResponse,
@@ -123,6 +124,7 @@ export default function ChatWidget() {
     if (!conversationId) return;
     const supabase = getWidgetSupabaseClient();
     let cancelled = false;
+    let refillTimer: number | undefined;
 
     const channel = supabase
       .channel(`widget-conversation-${conversationId}`)
@@ -151,16 +153,24 @@ export default function ChatWidget() {
       .subscribe((state) => {
         if (state !== "SUBSCRIBED") return;
         // 購読開始までの取りこぼしを埋める（重複は mergeMessages で除外）
-        void fetchMessages(conversationId).then((rows) => {
-          if (!cancelled && rows) setMessages((prev) => mergeMessages(prev, rows));
-        });
-        void fetchConversation(conversationId).then((row) => {
-          if (!cancelled && row) setConversation((prev) => (prev && prev.id === row.id ? row : prev));
-        });
+        const refill = () => {
+          void fetchMessages(conversationId).then((rows) => {
+            if (!cancelled && rows) setMessages((prev) => mergeMessages(prev, rows));
+          });
+          void fetchConversation(conversationId).then((row) => {
+            if (!cancelled && row) setConversation((prev) => (prev && prev.id === row.id ? row : prev));
+          });
+        };
+        refill();
+        // SUBSCRIBED の通知後、サーバー側で配信が始まるまで少し時間差があるため、もう一度取り直す
+        // （実環境のE2Eで、購読直後の変更が届かないことを確認済み）
+        if (refillTimer !== undefined) window.clearTimeout(refillTimer);
+        refillTimer = window.setTimeout(refill, REALTIME_REFILL_DELAY_MS);
       });
 
     return () => {
       cancelled = true;
+      if (refillTimer !== undefined) window.clearTimeout(refillTimer);
       void supabase.removeChannel(channel);
     };
   }, [conversationId]);
