@@ -100,7 +100,7 @@ src/
     where email = '<オペレーターのメール>';
    ```
    付与後、オペレーターは再ログインしてJWTを更新する。
-7. **環境変数を設定する。** `cp .env.example .env.local` を実行し、エディタで値を入力する（チャットやターミナルに貼らない）。✅ Supabase分は設定済み・接続確認済み／`ANTHROPIC_API_KEY` は未設定
+7. **環境変数を設定する。** `cp .env.example .env.local` を実行し、エディタで値を入力する（チャットやターミナルに貼らない）。✅ 設定済み・接続確認済み（Supabase／Claude API）
    - Supabase の値は Project Settings → Data API（URL）と API Keys にある。新形式のキー（`sb_publishable_...` / `sb_secret_...`）も従来形式（anon / service_role）も、同じ変数名に入れてよい。
 8. **起動する。** `npm install` → `npm run dev` で http://localhost:3000 を開く。
 9. **FAQを投入する。** 教材の FAQ 18件を `data/` に配置し、投入スクリプト（未作成）で `faqs` に登録して埋め込みを生成する。
@@ -168,10 +168,10 @@ git worktree add ../case4-ai-backend  -b feat/ai-backend
 - Supabase（案件4専用プロジェクト）への接続確認、マイグレーション適用（2026-11-17）
 - 未ログインのユーザーが拒否されることを API 経由で確認
 - 実環境での RLS テスト `rls_smoke.sql` に合格（2026-11-17）
+- Claude API の接続確認（`claude-sonnet-4-6` で短い呼び出しが成功、2026-11-17）
 
 ### 未実施
 
-- Claude API の接続確認（API呼び出しは未実施）
 - FAQ 18件・テスト 8件の投入（データ未受領。内容は創作しない）
 - 埋め込みプロバイダーの選定（Claude API は埋め込みを提供しない。1536次元に合うモデルを選ぶ）
 - ウィジェット、チャットAPI、オペレーター画面の実装
