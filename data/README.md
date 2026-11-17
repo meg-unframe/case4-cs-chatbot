@@ -15,5 +15,5 @@
 - ✅ 2026-11-17: 案件4の Supabase の `public.faqs` に18件を投入した。`faq_no` が一意なので、同じ番号の行は入らない（再実行しても重複しないことを確認済み）。
 - 番号・カテゴリ・質問・回答が CSV と完全に一致することを照合済み（不一致0件、CSVにない行0件）。
 - `faqs` には、`faq_no`・`category`・`question`・`answer` に CSV の値をそのまま入れる。
-- `embedding`（1536次元）は**未設定**（18件すべて NULL）。別途生成する。埋め込みを作るサービスは未決定（Claude API は埋め込みを提供しない）。
+- `embedding`（1536次元）は**未設定**（18件すべて NULL）。OpenAI `text-embedding-3-small`（1536次元）で生成する（2026-11-17 決定）。
 - 投入は service_role で行う（authenticated には insert 権限がない）。

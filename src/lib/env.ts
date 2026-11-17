@@ -29,3 +29,19 @@ export function getServerEnv() {
     anthropicModel: process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6",
   };
 }
+
+/** 埋め込み（FAQ検索）専用の秘密値。回答生成は Claude、埋め込みは OpenAI を使う。 */
+export function getEmbeddingEnv() {
+  return {
+    openaiApiKey: required("OPENAI_API_KEY", process.env.OPENAI_API_KEY),
+  };
+}
+
+/** 埋め込みの設定。supabase/migrations の vector(1536) と必ず一致させる */
+export const EMBEDDING = {
+  provider: "openai",
+  model: "text-embedding-3-small",
+  dimension: 1536,
+  /** 回答に使う FAQ の件数（上位3件） */
+  matchCount: 3,
+} as const;

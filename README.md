@@ -8,7 +8,7 @@ AIエンジニア講座「案件4：フルスタックCSチャットボット」
 | 機能 | 内容 |
 |---|---|
 | 顧客ウィジェット | ECサイトに埋め込む React 製チャット |
-| AI自動応答 | FAQ（pgvector検索）を根拠に Claude API で回答 |
+| AI自動応答 | 質問を OpenAI `text-embedding-3-small`（1536次元）で埋め込み、pgvector で検索した上位3件の FAQ を根拠に Claude API で回答 |
 | 有人引き継ぎ | 回答不能・クレーム時に `waiting_operator` へ |
 | オペレーター画面 | 会話一覧・詳細・返信 |
 | Supabase | 会話保存、認証、Realtime、RLSによる権限分離 |
@@ -19,7 +19,7 @@ AIエンジニア講座「案件4：フルスタックCSチャットボット」
 
 ## 技術スタック
 
-Next.js 15（App Router・TypeScript）／React 19／Supabase（Postgres・Auth・Realtime・pgvector）／Claude API（`@anthropic-ai/sdk`）／Vercel
+Next.js 15（App Router・TypeScript）／React 19／Supabase（Postgres・Auth・Realtime・pgvector）／Claude API（回答生成）／OpenAI Embeddings（`text-embedding-3-small`、1536次元、FAQ検索のみ）／Vercel
 
 ## ディレクトリ構成
 
@@ -100,7 +100,7 @@ src/
     where email = '<オペレーターのメール>';
    ```
    付与後、オペレーターは再ログインしてJWTを更新する。
-7. **環境変数を設定する。** `cp .env.example .env.local` を実行し、エディタで値を入力する（チャットやターミナルに貼らない）。✅ 設定済み・接続確認済み（Supabase／Claude API）
+7. **環境変数を設定する。** `cp .env.example .env.local` を実行し、エディタで値を入力する（チャットやターミナルに貼らない）。✅ 設定済み・接続確認済み（Supabase／Claude API）／`OPENAI_API_KEY` は入力欄のみ用意（未設定）
    - Supabase の値は Project Settings → Data API（URL）と API Keys にある。新形式のキー（`sb_publishable_...` / `sb_secret_...`）も従来形式（anon / service_role）も、同じ変数名に入れてよい。
 8. **起動する。** `npm install` → `npm run dev` で http://localhost:3000 を開く。
 9. **FAQを投入する。** 教材の FAQ 18件を `data/` に配置し、投入スクリプト（未作成）で `faqs` に登録して埋め込みを生成する。
@@ -115,6 +115,7 @@ src/
 | `SUPABASE_SERVICE_ROLE_KEY` | **サーバー専用** | secret key または service_role key（AI応答の保存・FAQ検索） |
 | `ANTHROPIC_API_KEY` | **サーバー専用** | Claude API |
 | `ANTHROPIC_MODEL` | サーバー | 省略時 `claude-sonnet-4-6` |
+| `OPENAI_API_KEY` | **サーバー専用** | 埋め込み（`text-embedding-3-small`）。回答生成には使わない |
 
 ## 開発コマンド
 
@@ -173,8 +174,8 @@ git worktree add ../case4-ai-backend  -b feat/ai-backend
 
 ### 未実施
 
+- OpenAI API キーの設定と接続確認
 - FAQ の埋め込み（`embedding`）の生成（18件すべて未設定）
-- 埋め込みプロバイダーの選定（Claude API は埋め込みを提供しない。1536次元に合うモデルを選ぶ）
 - ウィジェット、チャットAPI、オペレーター画面の実装
 - Vercel へのデプロイ
 
