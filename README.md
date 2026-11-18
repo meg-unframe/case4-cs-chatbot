@@ -3,6 +3,17 @@
 AIエンジニア講座「案件4：フルスタックCSチャットボット」の開発用リポジトリ。
 **BOTANICA は教材の架空ブランド**です。実在店舗・他案件のデータ、DB、顧客情報は使用しません。
 
+## 本番環境
+
+| 画面 | URL |
+|---|---|
+| 顧客画面（埋め込みデモ） | https://case4-cs-chatbot-eight.vercel.app |
+| チャットウィジェット単体 | https://case4-cs-chatbot-eight.vercel.app/widget |
+| 管理画面（オペレーター） | https://case4-cs-chatbot-eight.vercel.app/operator/login |
+| 埋め込みスクリプト | https://case4-cs-chatbot-eight.vercel.app/widget-embed.js |
+
+ホスティングは Vercel で、GitHub の `main` と連携しています。
+
 ## MVPの範囲
 
 | 機能 | 内容 |
